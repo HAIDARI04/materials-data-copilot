@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comparison - Materials Data Copilot</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      --ink: #17212b;
+      --muted: #5f6f7e;
+      --line: #dce4ea;
+      --surface: #fff;
+      --soft: #f6f9fa;
+      --brand: #087f5b;
+      --brand-dark: #066348;
+      --brand-soft: #e5f5ef;
+      --danger: #b42318;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 0 1rem 3rem;
+      color: var(--ink);
+      background: radial-gradient(circle at 12% 0%, rgba(8,127,91,.10), transparent 28rem), #eef2f5;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin: 0 -1rem;
+      border-bottom: 1px solid rgba(214,222,229,.86);
+      background: rgba(255,255,255,.9);
+      backdrop-filter: blur(14px);
+    }
+    .header-inner { display: flex; width: min(1240px, calc(100% - 2rem)); min-height: 68px; margin: auto; align-items: center; justify-content: space-between; gap: 1rem; }
+    .brand { display: flex; align-items: center; gap: .7rem; color: var(--ink); text-decoration: none; }
+    .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; color: white; background: linear-gradient(145deg,#0b9870,#075b43); font-weight: 800; }
+    .brand small { display: block; color: var(--muted); }
+    nav { display: flex; gap: .3rem; }
+    nav a { padding: .55rem .7rem; border-radius: 8px; color: #334454; font-weight: 700; text-decoration: none; }
+    nav a[aria-current="page"] { color: var(--brand-dark); background: var(--brand-soft); }
+    main { width: min(1240px, 100%); margin: 0 auto; }
+    .hero { margin: 1.6rem 0 1.1rem; padding: 1.4rem 1.6rem; border: 1px solid rgba(8,127,91,.16); border-radius: 16px; background: linear-gradient(120deg,rgba(255,255,255,.96),rgba(232,247,241,.92)); box-shadow: 0 12px 38px rgba(25,44,63,.08); }
+    .eyebrow { margin: 0 0 .4rem; color: var(--brand); font-size: .76rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0 0 .35rem; font-size: clamp(1.7rem,3vw,2.35rem); letter-spacing: -.035em; }
+    .hero p:last-child { margin: 0; color: var(--muted); }
+    .workspace { display: grid; grid-template-columns: minmax(290px, 360px) minmax(0,1fr); gap: 1rem; align-items: start; }
+    .panel { padding: 1.15rem; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: 0 10px 30px rgba(25,44,63,.07); }
+    .controls { position: sticky; top: 84px; }
+    h2 { margin: 0 0 .35rem; font-size: 1.15rem; }
+    .muted { color: var(--muted); }
+    label { display: grid; gap: .35rem; color: #334454; font-size: .86rem; font-weight: 700; }
+    select, input { width: 100%; padding: .65rem .7rem; border: 1px solid #aebbc6; border-radius: 8px; background: white; font: inherit; }
+    select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px solid rgba(8,127,91,.2); outline-offset: 1px; border-color: var(--brand); }
+    .toolbar { display: flex; flex-wrap: wrap; gap: .45rem; margin: .8rem 0; }
+    button { padding: .58rem .72rem; border: 0; border-radius: 8px; color: white; background: var(--brand); font: inherit; font-weight: 750; cursor: pointer; }
+    button:hover:not(:disabled) { background: var(--brand-dark); }
+    button.secondary { color: #334454; background: #e8eef2; }
+    button:disabled { opacity: .5; cursor: wait; }
+    .candidate-list { display: grid; gap: .4rem; max-height: calc(100vh - 390px); min-height: 160px; overflow: auto; padding-right: .2rem; }
+    .candidate { display: grid; grid-template-columns: auto minmax(0,1fr); gap: .55rem; padding: .58rem; border: 1px solid var(--line); border-radius: 9px; font-size: .86rem; }
+    .candidate:has(input:checked) { border-color: #a9d9c8; background: var(--brand-soft); }
+    .candidate input { width: auto; margin-top: .15rem; }
+    .candidate strong, .candidate small { overflow-wrap: anywhere; }
+    .candidate small { display: block; margin-top: .18rem; color: var(--muted); font-weight: 500; }
+    .graph-heading { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: .8rem; margin-bottom: .65rem; }
+    .graph-heading label { min-width: 170px; }
+    .plot-controls { display: flex; flex-wrap: wrap; align-items: end; gap: .55rem; margin: .75rem 0; padding: .7rem; border: 1px solid var(--line); border-radius: 10px; background: var(--soft); }
+    .plot-controls > label { align-self: flex-start; }
+    .plot-controls label { min-width: 155px; }
+    .plot-controls .series-control { min-width: 220px; }
+    .zoom-control { display: grid; grid-template-columns: minmax(100px,160px) 5rem; gap: .35rem; }
+    .zoom-control input[type="range"] { padding: 0; }
+    .zoom-control input[type="number"] { width: 5rem; }
+    .plot-help { margin: .35rem 0 .7rem; color: var(--muted); font-size: .82rem; }
+    .peak-picker { margin: .65rem 0; padding: .75rem; border: 1px solid #c9d9e2; border-radius: 10px; background: #fbfcfd; }
+    .peak-picker-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; }
+    .peak-picker-heading button { padding: .42rem .58rem; }
+    .peak-options { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: .4rem; max-height: 220px; margin-top: .55rem; overflow: auto; }
+    .peak-option { display: grid; grid-template-columns: auto minmax(0,1fr); gap: .5rem; padding: .5rem; border: 1px solid var(--line); border-radius: 8px; background: white; }
+    .peak-option:has(input:checked) { border-color: #a9d9c8; background: var(--brand-soft); }
+    .peak-option input { width: auto; margin-top: .15rem; }
+    .peak-option small { display: block; color: var(--muted); font-weight: 500; }
+    #status { min-height: 1.3rem; margin: .45rem 0 .8rem; }
+    .success { color: var(--brand-dark); }
+    .error { color: var(--danger); }
+    .warning { color: #8a6200; }
+    .plot-shell { position: relative; min-height: 500px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: white; }
+    #comparison-canvas { display: block; width: 100%; height: 500px; }
+    #comparison-canvas { cursor: crosshair; touch-action: none; }
+    .plot-shell.panning #comparison-canvas { cursor: grabbing; }
+    #zoom-selection { position: absolute; z-index: 2; border: 1px solid var(--brand); background: rgba(8,127,91,.18); pointer-events: none; }
+    #plot-inspector { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+    #cursor-guide { position: absolute; width: 0; border-left: 1px dashed rgba(51,68,84,.65); }
+    #cursor-markers { position: absolute; inset: 0; }
+    .cursor-marker { position: absolute; width: 9px; height: 9px; border: 2px solid var(--marker); border-radius: 50%; background: white; transform: translate(-50%,-50%); }
+    #plot-tooltip { position: absolute; width: min(340px,calc(100% - 20px)); max-height: 290px; overflow: hidden; padding: .55rem .65rem; border-radius: 8px; color: white; background: rgba(23,33,43,.94); box-shadow: 0 5px 18px rgba(23,33,43,.24); font-size: .8rem; line-height: 1.38; white-space: pre-line; }
+    #plot-tooltip.peak-lock { background: rgba(180,35,24,.96); }
+    .empty { display: grid; min-height: 500px; place-items: center; padding: 2rem; color: var(--muted); text-align: center; }
+    .legend { display: flex; flex-wrap: wrap; gap: .55rem 1rem; margin: .8rem 0 0; padding: 0; list-style: none; }
+    .legend li { display: flex; align-items: center; gap: .4rem; color: var(--muted); font-size: .82rem; }
+    .swatch { width: 22px; border-top: 3px solid var(--swatch); }
+    .peak-details { margin-top: .9rem; }
+    .peak-details h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .peak-details .table-shell { margin-top: .55rem; }
+    .peak-details table { min-width: 1080px; font-size: .82rem; }
+    .peak-details td { vertical-align: top; }
+    .not-fitted { color: #8a6200; font-weight: 700; }
+    .table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; }
+    table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: .9rem; }
+    th, td { padding: .7rem .6rem; border-bottom: 1px solid var(--line); text-align: left; }
+    th { color: var(--muted); background: var(--soft); font-size: .75rem; letter-spacing: .04em; text-transform: uppercase; }
+    tbody tr:hover { background: #f7fbf9; }
+    .analysis-section { margin-top: 1rem; }
+    .analysis-section-heading { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: .8rem; margin-bottom: .9rem; }
+    .analysis-layout { display: grid; grid-template-columns: minmax(290px,360px) minmax(0,1fr); gap: .9rem; }
+    .analysis-box { min-width: 0; padding: .9rem; border: 1px solid var(--line); border-radius: 11px; background: var(--soft); }
+    .analysis-box h3, .analysis-box h4 { margin: 0 0 .35rem; }
+    .analysis-list { display: grid; gap: .45rem; margin: .65rem 0 1rem; }
+    .analysis-choice { width: 100%; padding: .65rem; border: 1px solid var(--line); color: #334454; background: white; text-align: left; }
+    .analysis-choice:hover:not(:disabled) { color: var(--brand-dark); background: var(--brand-soft); }
+    .analysis-choice.active { border-color: var(--brand); color: var(--brand-dark); background: var(--brand-soft); box-shadow: inset 4px 0 var(--brand); }
+    .analysis-choice strong, .analysis-choice small { display: block; }
+    .analysis-choice small { margin-top: .2rem; color: var(--muted); font-weight: 500; }
+    .custom-analysis-form { display: grid; gap: .55rem; padding-top: .85rem; border-top: 1px solid var(--line); }
+    .custom-analysis-form button { justify-self: start; }
+    #custom-analysis-status, #analysis-catalog-status { min-height: 1.2rem; margin: .35rem 0; font-size: .82rem; }
+    .analysis-chart-heading { margin-bottom: .55rem; }
+    .analysis-chart-heading h3 { margin-bottom: .2rem; }
+    .analysis-chart-shell { position: relative; min-height: 430px; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: white; }
+    #analysis-canvas { display: block; width: 100%; height: 430px; }
+    #analysis-empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 2rem; color: var(--muted); text-align: center; }
+    .analysis-legend { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin: .65rem 0 0; padding: 0; list-style: none; }
+    .analysis-legend li { display: flex; align-items: center; gap: .4rem; color: var(--muted); font-size: .82rem; }
+    .analysis-references { margin: .7rem 0 0; padding-left: 1.1rem; color: var(--muted); font-size: .8rem; }
+    .analysis-references a { color: var(--brand-dark); }
+    @media (max-width: 800px) {
+      .workspace, .analysis-layout { grid-template-columns: 1fr; }
+      .controls { position: static; }
+      .candidate-list { max-height: 360px; }
+      nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="brand" href="/upload"><span class="brand-mark">M</span><span><strong>Materials Data Copilot</strong><small>Local research workspace</small></span></a>
+      <nav aria-label="Workspace sections"><a href="/upload">Import &amp; datasets</a><a href="/comparison" aria-current="page">Comparison</a></nav>
+    </div>
+  </header>
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Comparison page</p>
+      <h1>Compare correlated spectra in one graph</h1>
+      <p>Select an anchor spectrum. Related sample families such as T-12 are selected automatically, and every checkbox remains under your control.</p>
+    </section>
+    <div class="workspace">
+      <aside class="panel controls" aria-labelledby="selection-heading">
+        <h2 id="selection-heading">Spectrum selection</h2>
+        <p class="muted">Choose the spectrum used to find related measurements.</p>
+        <label>Anchor spectrum<select id="anchor-select"><option>Loading datasets…</option></select></label>
+        <div class="toolbar">
+          <button id="recommended-button" class="secondary" type="button">Select recommended</button>
+          <button id="all-button" class="secondary" type="button">Select all</button>
+          <button id="clear-button" class="secondary" type="button">Clear</button>
+        </div>
+        <label>Filter available spectra<input id="filter-input" type="search" placeholder="Sample, filename, or material"></label>
+        <p id="selection-summary" class="muted"></p>
+        <div id="candidate-list" class="candidate-list"></div>
+      </aside>
+      <section class="panel" aria-labelledby="graph-heading">
+        <div class="graph-heading">
+          <div><h2 id="graph-heading">Selected spectra overlay</h2><span class="muted">All checked spectra are aligned over their shared range.</span></div>
+        </div>
+        <div class="plot-controls">
+          <label class="series-control">Displayed series<select id="series-select"><option value="raw">Raw</option><option value="artifact_corrected">Instrument-artifact filtered</option><option value="baseline">Estimated baseline</option><option value="corrected">Baseline-corrected</option><option value="substrate_corrected">Substrate-corrected</option><option value="substrate_fit">Estimated substrate contribution</option><option value="deconvolved_fit">Deconvolution fit</option><option value="deconvolution_residual">Deconvolution residual</option><option value="selected_deconvolution_peaks">Selected deconvoluted peaks</option></select></label>
+          <label>Normalization<select id="normalization-select"><option value="max">Maximum intensity</option><option value="vector">Vector norm</option><option value="area">Total area</option><option value="none">None</option></select></label>
+          <label>Spectrum offset<input id="offset-input" type="number" value="0" step="0.1" min="-1000000000000" max="1000000000000"><small>Added cumulatively to each trace</small></label>
+          <label>Dynamic zoom<span class="zoom-control"><input id="zoom-range" type="range" min="1" max="50" step="0.1" value="1"><input id="zoom-number" type="number" min="1" max="50" step="0.1" value="1"></span></label>
+          <button id="reset-view" class="secondary" type="button">Reset view</button><span id="zoom-status" class="muted">1×</span>
+        </div>
+        <section id="peak-picker" class="peak-picker" hidden aria-labelledby="peak-picker-heading">
+          <div class="peak-picker-heading"><div><strong id="peak-picker-heading">Deconvoluted peak selection</strong><div id="peak-summary" class="muted">Choose fitted peak components to compare.</div></div><div><button id="reprocess-peaks" type="button">Reprocess selected for peak fitting</button> <button id="refresh-peaks" class="secondary" type="button">Refresh peaks</button></div></div>
+          <div id="peak-options" class="peak-options"></div>
+        </section>
+        <p class="plot-help">Use the mouse wheel to zoom around the cursor. Drag an area to zoom; use Shift + drag to pan.</p>
+        <p id="status" role="status" aria-live="polite">Select an anchor spectrum to begin.</p>
+        <div id="empty-state" class="empty">At least two spectra are required for a comparison graph.</div>
+        <div id="plot-shell" class="plot-shell" hidden><canvas id="comparison-canvas" role="img" aria-label="Selected spectra comparison graph"></canvas><div id="zoom-selection" hidden></div><div id="plot-inspector" hidden><div id="cursor-guide"></div><div id="cursor-markers"></div><div id="plot-tooltip"></div></div></div>
+        <ul id="legend" class="legend"></ul>
+        <section id="peak-details" class="peak-details" hidden aria-labelledby="peak-details-heading">
+          <h3 id="peak-details-heading">Selected deconvoluted peak details</h3>
+          <div id="peak-details-summary" class="muted"></div>
+          <div class="table-shell"><table><thead><tr><th>Spectrum</th><th>Selected peak</th><th>Status</th><th>Fitted center</th><th>Assignment</th><th>Material</th><th>Amplitude</th><th>FWHM</th><th>Area</th><th>Trace offset</th></tr></thead><tbody id="peak-details-body"></tbody></table></div>
+        </section>
+      </section>
+    </div>
+    <section id="analysis-section" class="panel analysis-section" aria-labelledby="analysis-section-heading">
+      <div class="analysis-section-heading">
+        <div><h2 id="analysis-section-heading">Relevant analysis plots</h2><span class="muted">Literature-backed suggestions and user-defined peak analyses for the selected spectra.</span></div>
+      </div>
+      <div class="analysis-layout">
+        <aside class="analysis-box" aria-labelledby="analysis-list-heading">
+          <h3 id="analysis-list-heading">Suggested analyses</h3>
+          <p class="muted">Suggestions appear when processed results identify a relevant material system.</p>
+          <p id="analysis-catalog-status" role="status" aria-live="polite">Select at least two spectra to load analysis suggestions.</p>
+          <div id="analysis-list" class="analysis-list"></div>
+          <form id="custom-analysis-form" class="custom-analysis-form">
+            <h4>Add a specific analysis</h4>
+            <label>Analysis name<input id="custom-analysis-name" maxlength="100" placeholder="Optional custom title"></label>
+            <label>Operation<select id="custom-analysis-operation"><option value="peak_value">Plot one peak property</option><option value="peak_separation">Peak-position separation</option><option value="peak_ratio">Peak-property ratio</option></select></label>
+            <label>First peak<select id="custom-peak-a"><option value="">Process spectra with peak fitting first</option></select></label>
+            <label id="custom-peak-b-label" hidden>Second peak<select id="custom-peak-b"></select></label>
+            <label id="custom-metric-label">Peak property<select id="custom-analysis-metric"><option value="center_cm_1">Fitted center</option><option value="amplitude">Amplitude</option><option value="fwhm_cm_1">FWHM</option><option value="area">Integrated area</option></select></label>
+            <button id="add-custom-analysis" type="submit">Add analysis</button>
+            <p id="custom-analysis-status" role="status" aria-live="polite"></p>
+          </form>
+        </aside>
+        <section class="analysis-box" aria-labelledby="analysis-chart-title">
+          <div class="analysis-chart-heading"><h3 id="analysis-chart-title">Select an analysis</h3><div id="analysis-chart-description" class="muted">Choose a suggested or custom analysis from the left panel.</div></div>
+          <div class="analysis-chart-shell"><canvas id="analysis-canvas" role="img" aria-label="Selected group analysis plot"></canvas><div id="analysis-empty">No analysis selected.</div></div>
+          <ul id="analysis-legend" class="analysis-legend"></ul>
+          <ul id="analysis-references" class="analysis-references"></ul>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script>
+    const anchorSelect = document.querySelector("#anchor-select");
+    const recommendedButton = document.querySelector("#recommended-button");
+    const allButton = document.querySelector("#all-button");
+    const clearButton = document.querySelector("#clear-button");
+    const filterInput = document.querySelector("#filter-input");
+    const selectionSummary = document.querySelector("#selection-summary");
+    const candidateList = document.querySelector("#candidate-list");
+    const seriesSelect = document.querySelector("#series-select");
+    const normalizationSelect = document.querySelector("#normalization-select");
+    const offsetInput = document.querySelector("#offset-input");
+    const peakPicker = document.querySelector("#peak-picker");
+    const peakSummary = document.querySelector("#peak-summary");
+    const peakOptions = document.querySelector("#peak-options");
+    const refreshPeaksButton = document.querySelector("#refresh-peaks");
+    const reprocessPeaksButton = document.querySelector("#reprocess-peaks");
+    const zoomRange = document.querySelector("#zoom-range");
+    const zoomNumber = document.querySelector("#zoom-number");
+    const resetViewButton = document.querySelector("#reset-view");
+    const zoomStatus = document.querySelector("#zoom-status");
+    const status = document.querySelector("#status");
+    const emptyState = document.querySelector("#empty-state");
+    const plotShell = document.querySelector("#plot-shell");
+    const canvas = document.querySelector("#comparison-canvas");
+    const zoomSelection = document.querySelector("#zoom-selection");
+    const plotInspector = document.querySelector("#plot-inspector");
+    const cursorGuide = document.querySelector("#cursor-guide");
+    const cursorMarkers = document.querySelector("#cursor-markers");
+    const plotTooltip = document.querySelector("#plot-tooltip");
+    const legend = document.querySelector("#legend");
+    const peakDetails = document.querySelector("#peak-details");
+    const peakDetailsSummary = document.querySelector("#peak-details-summary");
+    const peakDetailsBody = document.querySelector("#peak-details-body");
+    const analysisCatalogStatus = document.querySelector("#analysis-catalog-status");
+    const analysisList = document.querySelector("#analysis-list");
+    const customAnalysisForm = document.querySelector("#custom-analysis-form");
+    const customAnalysisName = document.querySelector("#custom-analysis-name");
+    const customAnalysisOperation = document.querySelector("#custom-analysis-operation");
+    const customPeakA = document.querySelector("#custom-peak-a");
+    const customPeakBLabel = document.querySelector("#custom-peak-b-label");
+    const customPeakB = document.querySelector("#custom-peak-b");
+    const customMetricLabel = document.querySelector("#custom-metric-label");
+    const customAnalysisMetric = document.querySelector("#custom-analysis-metric");
+    const customAnalysisStatus = document.querySelector("#custom-analysis-status");
+    const analysisChartTitle = document.querySelector("#analysis-chart-title");
+    const analysisChartDescription = document.querySelector("#analysis-chart-description");
+    const analysisCanvas = document.querySelector("#analysis-canvas");
+    const analysisEmpty = document.querySelector("#analysis-empty");
+    const analysisLegend = document.querySelector("#analysis-legend");
+    const analysisReferences = document.querySelector("#analysis-references");
+    let imports = [];
+    let discovery = null;
+    let overlay = null;
+    let updateTimer = null;
+    let requestSerial = 0;
+    let viewport = null;
+    let plotState = null;
+    let plotDrag = null;
+    let peakCatalog = null;
+    const selectedPeakIds = new Set();
+    let analysisCatalog = null;
+    let analysisFileKey = null;
+    let analysisRequestSerial = 0;
+    let selectedAnalysisId = null;
+    let customAnalysisSerial = 0;
+    let customAnalyses = [];
+
+    function color(index) {
+      return `hsl(${((index * 137.508 + 158) % 360).toFixed(1)} 62% 40%)`;
+    }
+
+    function selectedIds() {
+      return [...candidateList.querySelectorAll("input:checked")].map((input) => input.value);
+    }
+
+    function reasonText(candidate) {
+      const labels = { anchor_spectrum: "anchor", same_sample_family: "same sample family", same_material_system: "same material system", spectral_correlation: "spectrally correlated" };
+      return candidate.match_reasons.map((reason) => labels[reason] || reason).join(", ");
+    }
+
+    function hidePeakDetails() {
+      peakDetails.hidden = true;
+      peakDetailsSummary.textContent = "";
+      peakDetailsBody.replaceChildren();
+    }
+
+    function normalizedPeakLabel(value) {
+      return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+    }
+
+    function formatPeakNumber(value, maximumFractionDigits = 3) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return "—";
+      return number.toLocaleString(undefined, { maximumFractionDigits });
+    }
+
+    function renderPeakDetails(result) {
+      hidePeakDetails();
+      if (result.series_name !== "selected_deconvolution_peaks") return;
+
+      let fittedCount = 0;
+      let missingCount = 0;
+      result.series.forEach((series) => {
+        (result.peak_selections || []).forEach((selection) => {
+          const targetCenter = Number(selection.center_cm_1);
+          const tolerance = Number(selection.tolerance_cm_1 || 12);
+          const targetLabel = normalizedPeakLabel(selection.label);
+          const component = (series.matched_components || []).find((candidate) => {
+            const centerMatches = Math.abs(Number(candidate.center_cm_1) - targetCenter) <= tolerance;
+            const candidateLabel = normalizedPeakLabel(candidate.label);
+            return centerMatches && (!targetLabel || !candidateLabel || candidateLabel === targetLabel);
+          });
+          if (component) fittedCount += 1; else missingCount += 1;
+
+          const row = peakDetailsBody.insertRow();
+          const spectrumName = series.sample_id && series.sample_id !== series.original_filename
+            ? `${series.sample_id} · ${series.original_filename}`
+            : series.original_filename;
+          row.insertCell().textContent = spectrumName;
+          row.insertCell().textContent = `${formatPeakNumber(targetCenter, 1)} cm⁻¹ · ${selection.label || "Unassigned component"}`;
+          const statusCell = row.insertCell();
+          statusCell.textContent = component ? "Fitted" : "Not fitted";
+          if (!component) statusCell.className = "not-fitted";
+          row.insertCell().textContent = component ? `${formatPeakNumber(component.center_cm_1)} cm⁻¹` : "—";
+          row.insertCell().textContent = component ? (component.label || component.mode_group || "Unassigned") : "—";
+          row.insertCell().textContent = component?.material_system || "—";
+          row.insertCell().textContent = formatPeakNumber(component?.amplitude);
+          row.insertCell().textContent = component ? `${formatPeakNumber(component.fwhm_cm_1)} cm⁻¹` : "—";
+          row.insertCell().textContent = formatPeakNumber(component?.area);
+          row.insertCell().textContent = formatPeakNumber(series.applied_offset);
+        });
+      });
+
+      const total = fittedCount + missingCount;
+      peakDetailsSummary.textContent = `${fittedCount} of ${total} selected spectrum/peak combinations have fitted components${missingCount ? `; ${missingCount} ${missingCount === 1 ? "is" : "are"} not fitted` : ""}.`;
+      peakDetails.hidden = false;
+    }
+
+    function spectrumAnalysisLabel(spectrum) {
+      return spectrum.sample_id || spectrum.original_filename;
+    }
+
+    function allAnalysisItems() {
+      return [...(analysisCatalog?.suggestions || []), ...customAnalyses];
+    }
+
+    function selectedAnalysis() {
+      return allAnalysisItems().find((item) => item.analysis_id === selectedAnalysisId) || null;
+    }
+
+    function clearAnalysisChart(message = "No analysis selected.") {
+      const context = analysisCanvas.getContext("2d");
+      context.clearRect(0,0,analysisCanvas.width,analysisCanvas.height);
+      analysisEmpty.textContent = message;
+      analysisEmpty.hidden = false;
+      analysisLegend.replaceChildren();
+      analysisReferences.replaceChildren();
+      analysisChartTitle.textContent = "Select an analysis";
+      analysisChartDescription.textContent = "Choose a suggested or custom analysis from the left panel.";
+    }
+
+    function resetAnalysisWorkspace(message) {
+      analysisRequestSerial += 1;
+      analysisCatalog = null;
+      analysisFileKey = null;
+      selectedAnalysisId = null;
+      customAnalyses = [];
+      analysisList.replaceChildren();
+      analysisCatalogStatus.textContent = message;
+      analysisCatalogStatus.className = "";
+      customAnalysisStatus.textContent = "";
+      [customPeakA,customPeakB].forEach((select) => {select.replaceChildren();const option=document.createElement("option");option.value="";option.textContent="No fitted peak groups available";select.append(option);});
+      customPeakA.disabled=true;customPeakB.disabled=true;customAnalysisForm.querySelector("button").disabled=true;
+      clearAnalysisChart();
+    }
+
+    function peakOptionText(peak) {
+      return `${Number(peak.center_cm_1).toFixed(1)} cm⁻¹ · ${peak.label || "Unassigned component"}`;
+    }
+
+    function renderCustomPeakOptions() {
+      [customPeakA,customPeakB].forEach((select) => {
+        const previous=select.value;select.replaceChildren();
+        (analysisCatalog?.custom_peak_options || []).forEach((peak) => {const option=document.createElement("option");option.value=peak.peak_id;option.textContent=peakOptionText(peak);select.append(option);});
+        if([...select.options].some((option)=>option.value===previous))select.value=previous;
+      });
+      const available=Boolean(analysisCatalog?.custom_peak_options.length);
+      customPeakA.disabled=!available;customPeakB.disabled=!available;customAnalysisForm.querySelector("button").disabled=!available;
+    }
+
+    function renderAnalysisList() {
+      analysisList.replaceChildren();
+      const suggestions=analysisCatalog?.suggestions || [];
+      const items=allAnalysisItems();
+      items.forEach((analysis) => {
+        const button=document.createElement("button");button.type="button";button.className="analysis-choice";button.classList.toggle("active",analysis.analysis_id===selectedAnalysisId);
+        const title=document.createElement("strong");title.textContent=analysis.title;
+        const detail=document.createElement("small");const kind=analysis.user_defined?"User-defined":analysis.references?.length?"Literature-backed suggestion":"Suggested analysis";detail.textContent=`${kind} · ${analysis.support_count || 0}/${analysisCatalog.spectra.length} spectra with values`;
+        button.append(title,detail);button.addEventListener("click",()=>{selectedAnalysisId=analysis.analysis_id;renderAnalysisList();drawSelectedAnalysis();});analysisList.append(button);
+      });
+      if(!items.length){const message=document.createElement("p");message.className="muted";message.textContent="No material-specific suggestions are available yet. Process the spectra or add a fitted-peak analysis below.";analysisList.append(message);}
+      const unavailable=analysisCatalog?.unavailable_files.length || 0;analysisCatalogStatus.textContent=(suggestions.length?`${suggestions.length} literature-backed analysis suggestion${suggestions.length===1?"":"s"} for this group.`:"No literature-backed group analysis is available for the current processed results.")+(unavailable?` ${unavailable} selected spectrum${unavailable===1?" needs":" need"} processing.`:"");
+    }
+
+    function drawSelectedAnalysis() {
+      const analysis=selectedAnalysis();
+      if(!analysis){clearAnalysisChart();return;}
+      analysisChartTitle.textContent=analysis.title;
+      analysisChartDescription.textContent=analysis.description || analysis.recommendation_reason || "";
+      analysisLegend.replaceChildren();analysisReferences.replaceChildren();
+      const spectra=analysisCatalog.spectra;const traces=analysis.traces || [];
+      const values=traces.flatMap((trace)=>trace.observations.filter((item)=>item.value!=null).map((item)=>Number(item.value)).filter(Number.isFinite));
+      if(!values.length){clearAnalysisChart("The selected analysis has no numeric values for these spectra.");analysisChartTitle.textContent=analysis.title;analysisChartDescription.textContent=analysis.description || "";return;}
+      analysisEmpty.hidden=true;
+      const bounds=analysisCanvas.getBoundingClientRect();const width=Math.max(420,bounds.width);const height=430;const ratio=window.devicePixelRatio||1;
+      analysisCanvas.width=Math.round(width*ratio);analysisCanvas.height=Math.round(height*ratio);const context=analysisCanvas.getContext("2d");context.scale(ratio,ratio);
+      const padding={top:28,right:24,bottom:92,left:82};const plotWidth=width-padding.left-padding.right;const plotHeight=height-padding.top-padding.bottom;
+      let yMin=Math.min(...values);let yMax=Math.max(...values);if(yMin===yMax){const spread=Math.max(Math.abs(yMin)*.05,1);yMin-=spread;yMax+=spread;}else{const margin=(yMax-yMin)*.08;yMin-=margin;yMax+=margin;}
+      const xPos=(index)=>padding.left+(spectra.length===1?plotWidth/2:index/(spectra.length-1)*plotWidth);const yPos=(value)=>padding.top+plotHeight-(value-yMin)/(yMax-yMin)*plotHeight;
+      context.fillStyle="white";context.fillRect(0,0,width,height);context.font="12px system-ui, sans-serif";
+      for(let tick=0;tick<=5;tick+=1){const part=tick/5;const y=padding.top+part*plotHeight;context.strokeStyle="#e3e8ec";context.lineWidth=1;context.beginPath();context.moveTo(padding.left,y);context.lineTo(padding.left+plotWidth,y);context.stroke();context.fillStyle="#526170";context.textAlign="right";context.fillText(Number((yMax-part*(yMax-yMin)).toPrecision(5)),padding.left-10,y+4);}
+      const labelStep=Math.max(1,Math.ceil(spectra.length/12));spectra.forEach((spectrum,index)=>{if(index%labelStep&&index!==spectra.length-1)return;const x=xPos(index);context.save();context.translate(x,padding.top+plotHeight+12);context.rotate(-Math.PI/4);context.fillStyle="#526170";context.textAlign="right";context.fillText(spectrumAnalysisLabel(spectrum).slice(0,28),0,0);context.restore();});
+      context.save();context.translate(18,padding.top+plotHeight/2);context.rotate(-Math.PI/2);context.fillStyle="#334454";context.textAlign="center";context.fillText(analysis.y_axis_label || "Analysis value",0,0);context.restore();
+      traces.forEach((trace,traceIndex)=>{const byFile=new Map(trace.observations.map((item)=>[item.file_id,item.value]));const traceColor=color(traceIndex);let started=false;context.strokeStyle=traceColor;context.lineWidth=2;context.beginPath();spectra.forEach((spectrum,index)=>{const rawValue=byFile.get(spectrum.file_id);if(rawValue==null){started=false;return;}const value=Number(rawValue);if(!Number.isFinite(value)){started=false;return;}const x=xPos(index);const y=yPos(value);if(!started){context.moveTo(x,y);started=true;}else context.lineTo(x,y);});context.stroke();spectra.forEach((spectrum,index)=>{const rawValue=byFile.get(spectrum.file_id);if(rawValue==null)return;const value=Number(rawValue);if(!Number.isFinite(value))return;context.fillStyle=traceColor;context.beginPath();context.arc(xPos(index),yPos(value),4,0,Math.PI*2);context.fill();});const item=document.createElement("li");const swatch=document.createElement("span");swatch.className="swatch";swatch.style.setProperty("--swatch",traceColor);const label=document.createElement("span");label.textContent=trace.label;item.append(swatch,label);analysisLegend.append(item);});
+      (analysis.references || []).forEach((reference)=>{const item=document.createElement("li");const link=document.createElement("a");link.href=reference.source_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=reference.citation || reference.title || reference.doi;item.append("Literature basis: ",link);analysisReferences.append(item);});
+    }
+
+    function syncCustomAnalysisForm() {
+      const operation=customAnalysisOperation.value;customPeakBLabel.hidden=operation==="peak_value";customMetricLabel.hidden=operation==="peak_separation";
+    }
+
+    function addCustomAnalysis(event) {
+      event.preventDefault();
+      if(!analysisCatalog)return;
+      const peakA=analysisCatalog.custom_peak_options.find((peak)=>peak.peak_id===customPeakA.value);const peakB=analysisCatalog.custom_peak_options.find((peak)=>peak.peak_id===customPeakB.value);const operation=customAnalysisOperation.value;const metric=customAnalysisMetric.value;
+      if(!peakA||(operation!=="peak_value"&&!peakB)){customAnalysisStatus.textContent="Choose the required fitted peak groups.";customAnalysisStatus.className="error";return;}
+      if(operation!=="peak_value"&&peakA.peak_id===peakB.peak_id){customAnalysisStatus.textContent="Choose two different peak groups.";customAnalysisStatus.className="error";return;}
+      const metricLabels={center_cm_1:"fitted center",amplitude:"amplitude",fwhm_cm_1:"FWHM",area:"integrated area"};const aByFile=new Map(peakA.observations.map((item)=>[item.file_id,item]));const bByFile=new Map((peakB?.observations||[]).map((item)=>[item.file_id,item]));
+      const observations=analysisCatalog.spectra.map((spectrum)=>{const first=aByFile.get(spectrum.file_id);const second=bByFile.get(spectrum.file_id);let value=null;if(operation==="peak_value")value=first?.[metric];else if(operation==="peak_separation"&&first?.center_cm_1!=null&&second?.center_cm_1!=null)value=Math.abs(second.center_cm_1-first.center_cm_1);else if(operation==="peak_ratio"&&first?.[metric]!=null&&Number(second?.[metric])>0)value=Number(first[metric])/Number(second[metric]);return {file_id:spectrum.file_id,sample_id:spectrum.sample_id,original_filename:spectrum.original_filename,value:value==null?null:Number(value)};});
+      const firstName=peakOptionText(peakA);const secondName=peakB?peakOptionText(peakB):"";const defaultTitle=operation==="peak_value"?`${firstName} · ${metricLabels[metric]}`:operation==="peak_separation"?`${firstName} ↔ ${secondName} separation`:`${firstName} / ${secondName} · ${metricLabels[metric]} ratio`;const unit=operation==="peak_ratio"?"ratio":operation==="peak_separation"||metric==="center_cm_1"||metric==="fwhm_cm_1"?"cm⁻¹":metric==="amplitude"?"intensity":"area";
+      const analysis={analysis_id:`custom-${++customAnalysisSerial}`,title:customAnalysisName.value.trim()||defaultTitle,description:`User-defined ${operation.replaceAll("_"," ")} using fitted deconvolution components.`,recommendation_reason:"Added by the user",y_axis_label:unit==="ratio"?"Ratio":`${metricLabels[metric] || "Peak separation"} (${unit})`,traces:[{trace_id:"custom-value",label:customAnalysisName.value.trim()||defaultTitle,unit,observations}],references:[],support_count:observations.filter((item)=>item.value!=null).length,user_defined:true};
+      customAnalyses.push(analysis);selectedAnalysisId=analysis.analysis_id;customAnalysisName.value="";customAnalysisStatus.textContent=`Added with values for ${analysis.support_count}/${analysisCatalog.spectra.length} spectra.`;customAnalysisStatus.className="success";renderAnalysisList();drawSelectedAnalysis();
+    }
+
+    async function loadGroupAnalyses(fileIds) {
+      const fileKey=fileIds.join("|");
+      if(analysisCatalog&&analysisFileKey===fileKey)return;
+      analysisFileKey=fileKey;
+      const serial=++analysisRequestSerial;analysisCatalogStatus.textContent="Reviewing processed results for relevant analyses…";analysisCatalogStatus.className="";analysisList.replaceChildren();clearAnalysisChart("Loading analysis suggestions…");
+      try{const response=await fetch("/files/compare/analyses",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({file_ids:fileIds})});const result=await response.json();if(!response.ok)throw new Error(result.detail?.message||"Group analyses could not be loaded.");if(serial!==analysisRequestSerial)return;analysisCatalog=result;customAnalyses=[];selectedAnalysisId=result.suggestions[0]?.analysis_id||null;renderCustomPeakOptions();renderAnalysisList();drawSelectedAnalysis();}
+      catch(error){if(serial!==analysisRequestSerial)return;resetAnalysisWorkspace(error.message);analysisCatalogStatus.className="error";}
+    }
+
+    function updateSelectionSummary() {
+      const count = selectedIds().length;
+      selectionSummary.textContent = `${count} of ${discovery?.candidates.length || 0} compatible spectra selected.`;
+      if (count > 50) {
+        requestSerial += 1;
+        overlay = null;
+        plotShell.hidden = true;
+        emptyState.hidden = false;
+        legend.replaceChildren();
+        hidePeakDetails();
+        resetAnalysisWorkspace("Select no more than 50 spectra for group analysis.");
+        status.textContent = "A comparison graph may contain no more than 50 spectra.";
+        status.className = "error";
+        return;
+      }
+      if (count < 2) {
+        requestSerial += 1;
+        overlay = null;
+        plotShell.hidden = true;
+        emptyState.hidden = false;
+        legend.replaceChildren();
+        hidePeakDetails();
+        resetAnalysisWorkspace("Select at least two spectra to load analysis suggestions.");
+        status.textContent = "Select at least two spectra to display them together.";
+        status.className = "warning";
+      }
+    }
+
+    function scheduleGraph() {
+      window.clearTimeout(updateTimer);
+      updateSelectionSummary();
+      if (selectedIds().length >= 2 && selectedIds().length <= 50) {
+        updateTimer = window.setTimeout(
+          seriesSelect.value === "selected_deconvolution_peaks" ? loadPeakCatalog : loadOverlay,
+          140,
+        );
+      }
+    }
+
+    function renderCandidates() {
+      const query = filterInput.value.trim().toLowerCase();
+      candidateList.replaceChildren();
+      discovery.candidates.forEach((candidate) => {
+        const searchable = `${candidate.sample_id || ""} ${candidate.original_filename} ${candidate.material_system || ""}`.toLowerCase();
+        const row = document.createElement("label");
+        row.className = "candidate";
+        row.hidden = Boolean(query && !searchable.includes(query));
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = candidate.file_id;
+        checkbox.checked = candidate.selected;
+        checkbox.addEventListener("change", () => { candidate.selected = checkbox.checked; scheduleGraph(); });
+        const copy = document.createElement("span");
+        const title = document.createElement("strong");
+        title.textContent = candidate.sample_id || candidate.original_filename;
+        const detail = document.createElement("small");
+        const correlation = candidate.pearson_correlation_r == null ? "r unavailable" : `r = ${candidate.pearson_correlation_r.toFixed(3)}`;
+        detail.textContent = `${candidate.material_system || "Unknown material"} · ${candidate.original_filename} · ${correlation}${candidate.match_reasons.length ? ` · ${reasonText(candidate)}` : ""}`;
+        copy.append(title, detail);
+        row.append(checkbox, copy);
+        candidateList.append(row);
+      });
+      updateSelectionSummary();
+    }
+
+    function selectedPeakSelections() {
+      if (!peakCatalog) return [];
+      return peakCatalog.peaks
+        .filter((peak) => selectedPeakIds.has(peak.peak_id))
+        .map((peak) => ({ center_cm_1:peak.center_cm_1, label:peak.label, tolerance_cm_1:peak.tolerance_cm_1 }));
+    }
+
+    function renderPeakOptions() {
+      peakOptions.replaceChildren();
+      if (!peakCatalog?.peaks.length) {
+        const unavailable = peakCatalog?.unavailable_files || [];
+        const outdated = unavailable.filter((item) => item.reason === "outdated_processing_model");
+        const rejected = unavailable.filter((item) => item.reason === "deconvolution_fit_review_required");
+        const notFitted = unavailable.filter((item) => item.reason === "deconvolution_not_fitted");
+        const notProcessed = unavailable.filter((item) => item.reason === "not_processed");
+        const details = [];
+        if (outdated.length) details.push(`${outdated.length} use an older processing model and require v${outdated[0].required_model_version}`);
+        if (rejected.length) details.push(`${rejected.length} have fits rejected by the residual limit`);
+        if (notFitted.length) details.push(`${notFitted.length} were processed without peak fitting`);
+        if (notProcessed.length) details.push(`${notProcessed.length} have not been processed`);
+        peakSummary.textContent = `No accepted fitted peak components are currently available.${details.length ? ` ${details.join("; ")}.` : ""} Reprocess the selected spectra below.`;
+        return;
+      }
+      peakCatalog.peaks.forEach((peak) => {
+        const option=document.createElement("label"); option.className="peak-option";
+        const checkbox=document.createElement("input"); checkbox.type="checkbox"; checkbox.value=peak.peak_id; checkbox.checked=selectedPeakIds.has(peak.peak_id);
+        checkbox.addEventListener("change",()=>{hidePeakDetails();if(checkbox.checked)selectedPeakIds.add(peak.peak_id);else selectedPeakIds.delete(peak.peak_id);if(selectedPeakIds.size)loadOverlay();else{updateSelectionSummary();status.textContent="Select at least one deconvoluted peak component.";status.className="warning";}});
+        const copy=document.createElement("span"); const title=document.createElement("strong"); title.textContent=`${peak.center_cm_1.toFixed(1)} cm⁻¹${peak.label?` · ${peak.label}`:" · Unassigned component"}`;
+        const detail=document.createElement("small"); detail.textContent=`Present in ${peak.support_count}/${selectedIds().length} selected spectra${peak.material_systems.length?` · ${peak.material_systems.join(" / ")}`:""}`;
+        copy.append(title,detail); option.append(checkbox,copy); peakOptions.append(option);
+      });
+      const unavailable=peakCatalog.unavailable_files.length;
+      const outdated=peakCatalog.unavailable_files.filter((item)=>item.reason==="outdated_processing_model").length;
+      const rejected=peakCatalog.unavailable_files.filter((item)=>item.reason==="deconvolution_fit_review_required").length;
+      const unavailableDetails=[outdated?`${outdated} need current-model reprocessing`:"",rejected?`${rejected} failed residual validation`:""].filter(Boolean).join("; ");
+      peakSummary.textContent=`${peakCatalog.peaks.length} accepted fitted peak groups available${unavailable?`; ${unavailable} selected file${unavailable===1?" is":"s are"} unavailable${unavailableDetails?` (${unavailableDetails})`:""}`:""}.`;
+    }
+
+    async function reprocessSelectedForPeaks() {
+      const fileIds=selectedIds();
+      if(fileIds.length<2)return;
+      reprocessPeaksButton.disabled=true;refreshPeaksButton.disabled=true;
+      peakSummary.textContent=`Reprocessing ${fileIds.length} selected spectra with pseudo-Voigt peak fitting and automatic substrate correctionâ€¦`;
+      peakOptions.replaceChildren();status.textContent="Generating current-model fitted componentsâ€¦";status.className="";
+      try {
+        const response=await fetch("/files/process/batch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({file_ids:fileIds,deconvolution:"pseudo_voigt",substrate_correction:"auto"})});
+        const result=await response.json();if(!response.ok)throw new Error(result.detail?.message||"Selected spectra could not be reprocessed.");
+        const failed=result.items.filter((item)=>item.status==="failed");
+        peakCatalog=null;analysisCatalog=null;analysisFileKey=null;selectedPeakIds.clear();
+        await loadPeakCatalog();await loadGroupAnalyses(fileIds);
+        status.textContent=failed.length?`${result.completed_count} spectra reprocessed; ${failed.length} require individual review.`:`${result.completed_count} spectra reprocessed with the current peak-fitting model.`;
+        status.className=failed.length?"warning":"success";
+      } catch(error) {
+        peakSummary.textContent=error.message;status.textContent=error.message;status.className="error";
+      } finally {
+        reprocessPeaksButton.disabled=false;refreshPeaksButton.disabled=false;
+      }
+    }
+
+    async function loadPeakCatalog() {
+      const fileIds=selectedIds();
+      peakPicker.hidden=false;
+      hidePeakDetails();
+      if(fileIds.length<2)return;
+      peakSummary.textContent="Loading fitted peak components…"; peakOptions.replaceChildren();
+      try {
+        const response=await fetch("/files/compare/deconvolution-peaks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({file_ids:fileIds})});
+        const result=await response.json(); if(!response.ok)throw new Error(result.detail?.message||"Fitted peak components could not be loaded.");
+        peakCatalog=result; const validIds=new Set(result.peaks.map((peak)=>peak.peak_id)); [...selectedPeakIds].forEach((peakId)=>{if(!validIds.has(peakId))selectedPeakIds.delete(peakId);}); renderPeakOptions();
+        if(selectedPeakIds.size)await loadOverlay(); else {status.textContent="Select the deconvoluted peaks to plot across the selected spectra.";status.className="warning";}
+      } catch(error){peakCatalog=null;peakSummary.textContent=error.message;status.textContent=error.message;status.className="error";}
+    }
+
+    function clampedRange(minimum, maximum, fullMinimum, fullMaximum) {
+      const fullSpan = fullMaximum - fullMinimum;
+      const requestedSpan = Math.max(0,maximum-minimum);
+      const span = Math.min(fullSpan,requestedSpan);
+      if (span >= fullSpan) return [fullMinimum, fullMaximum];
+      const nextMinimum=Math.min(Math.max(minimum,fullMinimum),fullMaximum-span);
+      return [nextMinimum,nextMinimum+span];
+    }
+
+    function detectTracePeaks(series,seriesIndex) {
+      const points=series.points;
+      if(points.length<7)return [];
+      const values=points.map((point)=>point[1]);
+      const range=Math.max(...values)-Math.min(...values);
+      if(range<=0)return [];
+      const minimumProminence=range*.008;
+      const peaks=[];
+      for(let index=3;index<points.length-3;index+=1){
+        const value=values[index];
+        if(value<=values[index-1]||value<values[index+1])continue;
+        const leftMinimum=Math.min(...values.slice(index-3,index));
+        const rightMinimum=Math.min(...values.slice(index+1,index+4));
+        if(value-Math.max(leftMinimum,rightMinimum)<minimumProminence)continue;
+        peaks.push({seriesIndex,pointIndex:index,point:points[index]});
+      }
+      return peaks;
+    }
+
+    function drawGraph(result) {
+      plotInspector.hidden=true;
+      const bounds = canvas.getBoundingClientRect();
+      const width = Math.max(360,bounds.width);
+      const height = 500;
+      const pixelRatio = window.devicePixelRatio || 1;
+      canvas.width = Math.round(width*pixelRatio); canvas.height = Math.round(height*pixelRatio);
+      const context = canvas.getContext("2d"); context.scale(pixelRatio,pixelRatio);
+      const padding = {top:22,right:24,bottom:58,left:76};
+      const plotWidth = width-padding.left-padding.right; const plotHeight = height-padding.top-padding.bottom;
+      const allPoints = result.series.flatMap((series) => series.points);
+      const full = { xMin:Math.min(...allPoints.map((point) => point[0])), xMax:Math.max(...allPoints.map((point) => point[0])), yMin:Math.min(...allPoints.map((point) => point[1])), yMax:Math.max(...allPoints.map((point) => point[1])) };
+      if (full.yMin === full.yMax) { full.yMin -= 1; full.yMax += 1; }
+      const margin=(full.yMax-full.yMin)*.05; full.yMin-=margin; full.yMax+=margin;
+      let view = viewport ? {...viewport} : {...full};
+      [view.xMin,view.xMax]=clampedRange(view.xMin,view.xMax,full.xMin,full.xMax);
+      [view.yMin,view.yMax]=clampedRange(view.yMin,view.yMax,full.yMin,full.yMax);
+      viewport = (view.xMin===full.xMin && view.xMax===full.xMax && view.yMin===full.yMin && view.yMax===full.yMax) ? null : view;
+      const xPos=(value)=>padding.left+((value-view.xMin)/(view.xMax-view.xMin))*plotWidth;
+      const yPos=(value)=>padding.top+plotHeight-((value-view.yMin)/(view.yMax-view.yMin))*plotHeight;
+      context.fillStyle="white"; context.fillRect(0,0,width,height); context.font="12px system-ui, sans-serif";
+      for(let tick=0;tick<=5;tick+=1){const part=tick/5;const x=padding.left+part*plotWidth;const y=padding.top+part*plotHeight;context.strokeStyle="#e3e8ec";context.lineWidth=1;context.beginPath();context.moveTo(x,padding.top);context.lineTo(x,padding.top+plotHeight);context.moveTo(padding.left,y);context.lineTo(padding.left+plotWidth,y);context.stroke();context.fillStyle="#526170";context.textAlign="center";context.fillText(Number((view.xMin+part*(view.xMax-view.xMin)).toFixed(2)),x,padding.top+plotHeight+20);context.textAlign="right";context.fillText(Number((view.yMax-part*(view.yMax-view.yMin)).toFixed(3)),padding.left-10,y+4);}
+      context.save();context.beginPath();context.rect(padding.left,padding.top,plotWidth,plotHeight);context.clip();
+      result.series.forEach((series,index)=>{context.strokeStyle=color(index);context.lineWidth=1.5;context.beginPath();let started=false;series.points.forEach((point)=>{if(point[0]<view.xMin||point[0]>view.xMax)return;if(!started){context.moveTo(xPos(point[0]),yPos(point[1]));started=true;}else context.lineTo(xPos(point[0]),yPos(point[1]));});context.stroke();});
+      context.restore();context.fillStyle="#334454";context.textAlign="center";context.fillText("Raman shift (cm⁻¹)",padding.left+plotWidth/2,height-14);context.save();context.translate(18,padding.top+plotHeight/2);context.rotate(-Math.PI/2);context.fillText(result.normalization==="none"?"Intensity":"Normalized intensity",0,0);context.restore();
+      legend.replaceChildren();result.series.forEach((series,index)=>{const item=document.createElement("li");const swatch=document.createElement("span");swatch.className="swatch";swatch.style.setProperty("--swatch",color(index));const label=document.createElement("span");const offsetLabel=series.applied_offset?` · offset ${series.applied_offset.toLocaleString()}`:"";label.textContent=(series.sample_id?`${series.sample_id} · ${series.original_filename}`:series.original_filename)+offsetLabel;item.append(swatch,label);legend.append(item);});
+      const peaks=result.series.flatMap((series,index)=>detectTracePeaks(series,index));
+      plotState={width,height,padding,plotWidth,plotHeight,full,view,xPos,yPos,peaks};
+      syncZoomControls((full.xMax-full.xMin)/(view.xMax-view.xMin));
+    }
+
+    function syncZoomControls(factor) {
+      const value=Math.max(1,Math.min(50,factor)); zoomRange.value=value.toFixed(1); zoomNumber.value=value.toFixed(1); zoomStatus.textContent=`${Number(value.toFixed(1))}×`;
+    }
+
+    function setZoom(factor) {
+      if(!overlay||!plotState)return;
+      const value=Math.max(1,Math.min(50,Number(factor)||1)); const {full,view}=plotState;
+      const centerX=(view.xMin+view.xMax)/2; const centerY=(view.yMin+view.yMax)/2;
+      const xSpan=(full.xMax-full.xMin)/value; const ySpan=(full.yMax-full.yMin)/value;
+      let xRange=clampedRange(centerX-xSpan/2,centerX+xSpan/2,full.xMin,full.xMax); let yRange=clampedRange(centerY-ySpan/2,centerY+ySpan/2,full.yMin,full.yMax);
+      viewport=value===1?null:{xMin:xRange[0],xMax:xRange[1],yMin:yRange[0],yMax:yRange[1]}; syncZoomControls(value); drawGraph(overlay);
+    }
+
+    function resetView() { viewport=null; syncZoomControls(1); zoomSelection.hidden=true; if(overlay)drawGraph(overlay); }
+
+    function wheelZoom(event) {
+      if(!overlay||!plotState)return; event.preventDefault();
+      const rect=canvas.getBoundingClientRect(); const x=event.clientX-rect.left; const y=event.clientY-rect.top; const state=plotState;
+      if(x<state.padding.left||x>state.padding.left+state.plotWidth||y<state.padding.top||y>state.padding.top+state.plotHeight)return;
+      const current=(state.full.xMax-state.full.xMin)/(state.view.xMax-state.view.xMin); const next=Math.max(1,Math.min(50,current*Math.exp(-event.deltaY*.0015)));
+      const xData=state.view.xMin+((x-state.padding.left)/state.plotWidth)*(state.view.xMax-state.view.xMin); const yData=state.view.yMax-((y-state.padding.top)/state.plotHeight)*(state.view.yMax-state.view.yMin);
+      const xPart=(x-state.padding.left)/state.plotWidth; const yPart=1-(y-state.padding.top)/state.plotHeight; const xSpan=(state.full.xMax-state.full.xMin)/next; const ySpan=(state.full.yMax-state.full.yMin)/next;
+      const xr=clampedRange(xData-xPart*xSpan,xData+(1-xPart)*xSpan,state.full.xMin,state.full.xMax); const yr=clampedRange(yData-yPart*ySpan,yData+(1-yPart)*ySpan,state.full.yMin,state.full.yMax);
+      viewport=next===1?null:{xMin:xr[0],xMax:xr[1],yMin:yr[0],yMax:yr[1]}; syncZoomControls(next); drawGraph(overlay);
+    }
+
+    function nearestPointIndex(points,targetX) {
+      let low=0; let high=points.length-1;
+      while(high-low>1){const middle=Math.floor((low+high)/2);if(points[middle][0]<targetX)low=middle;else high=middle;}
+      return Math.abs(points[low][0]-targetX)<=Math.abs(points[high][0]-targetX)?low:high;
+    }
+
+    function sampleSeriesAtX(points,targetX) {
+      if(!points.length||targetX<points[0][0]||targetX>points[points.length-1][0])return null;
+      if(points.length===1)return {point:points[0],pointIndex:0};
+      let low=0;let high=points.length-1;
+      while(high-low>1){const middle=Math.floor((low+high)/2);if(points[middle][0]<targetX)low=middle;else high=middle;}
+      const left=points[low];const right=points[high];const span=right[0]-left[0];
+      const fraction=span===0?0:(targetX-left[0])/span;
+      const intensity=left[1]+fraction*(right[1]-left[1]);
+      return {point:[targetX,intensity],pointIndex:nearestPointIndex(points,targetX)};
+    }
+
+    function formattedIntensity(value) {
+      const magnitude=Math.abs(value);
+      if((magnitude>0&&magnitude<.001)||magnitude>=100000)return value.toExponential(4);
+      return Number(value.toFixed(5)).toLocaleString();
+    }
+
+    function inspectPlot(event) {
+      if(!overlay||!plotState||plotDrag)return;
+      const rect=canvas.getBoundingClientRect(); const mouseX=event.clientX-rect.left; const mouseY=event.clientY-rect.top; const state=plotState;
+      if(mouseX<state.padding.left||mouseX>state.padding.left+state.plotWidth||mouseY<state.padding.top||mouseY>state.padding.top+state.plotHeight){plotInspector.hidden=true;return;}
+      const targetX=state.view.xMin+((mouseX-state.padding.left)/state.plotWidth)*(state.view.xMax-state.view.xMin);
+      let activeSeries=null;
+      overlay.series.forEach((series,seriesIndex)=>{const sample=sampleSeriesAtX(series.points,targetX);if(!sample)return;const pointY=state.yPos(sample.point[1]);if(pointY<state.padding.top||pointY>state.padding.top+state.plotHeight)return;const distance=Math.abs(mouseY-pointY);if(!activeSeries||distance<activeSeries.distance)activeSeries={series,seriesIndex,...sample,distance};});
+      if(!activeSeries||activeSeries.distance>28){plotInspector.hidden=true;return;}
+      let snappedPeak=null;
+      state.peaks.forEach((peak)=>{if(peak.seriesIndex!==activeSeries.seriesIndex)return;const peakX=state.xPos(peak.point[0]);const peakY=state.yPos(peak.point[1]);if(peakX<state.padding.left||peakX>state.padding.left+state.plotWidth||peakY<state.padding.top||peakY>state.padding.top+state.plotHeight)return;const distance=Math.hypot(mouseX-peakX,mouseY-peakY);if(distance<=24&&(!snappedPeak||distance<snappedPeak.distance))snappedPeak={...peak,distance};});
+      const activePoint=snappedPeak?snappedPeak.point:activeSeries.point;
+      const xValue=activePoint[0]; const pointX=state.xPos(xValue); const pointY=state.yPos(activePoint[1]);
+      cursorGuide.style.left=`${pointX}px`;cursorGuide.style.top=`${state.padding.top}px`;cursorGuide.style.height=`${state.plotHeight}px`;
+      cursorMarkers.replaceChildren();
+      const marker=document.createElement("span");marker.className="cursor-marker";marker.style.setProperty("--marker",color(activeSeries.seriesIndex));marker.style.left=`${pointX}px`;marker.style.top=`${pointY}px`;cursorMarkers.append(marker);
+      const name=activeSeries.series.sample_id||activeSeries.series.original_filename;
+      const lines=[name,`${xValue.toFixed(3)} cm⁻¹`,`${formattedIntensity(activePoint[1])} intensity`];
+      if(snappedPeak){lines.push("Peak locked");const component=(activeSeries.series.matched_components||[]).find((item)=>Math.abs(Number(item.center_cm_1)-xValue)<=12);if(component?.label)lines.push(component.label);}
+      plotTooltip.textContent=lines.join("\n");plotTooltip.classList.toggle("peak-lock",Boolean(snappedPeak));
+      plotTooltip.style.borderLeft=`4px solid ${color(activeSeries.seriesIndex)}`;
+      const tooltipWidth=Math.min(340,state.width-20);const left=pointX+14+tooltipWidth>state.width?Math.max(10,pointX-tooltipWidth-14):pointX+14;const top=mouseY>state.height*.58?Math.max(10,mouseY-180):mouseY+12;plotTooltip.style.left=`${left}px`;plotTooltip.style.top=`${top}px`;plotInspector.hidden=false;
+    }
+
+    function beginPlotDrag(event) {
+      if(!plotState)return; plotInspector.hidden=true; const rect=canvas.getBoundingClientRect(); const x=event.clientX-rect.left; const y=event.clientY-rect.top;
+      if(x<plotState.padding.left||x>plotState.padding.left+plotState.plotWidth||y<plotState.padding.top||y>plotState.padding.top+plotState.plotHeight)return;
+      plotDrag={pointerId:event.pointerId,startX:x,startY:y,lastX:x,lastY:y,panning:event.shiftKey,state:{...plotState,view:{...plotState.view}}}; canvas.setPointerCapture(event.pointerId); plotShell.classList.toggle("panning",event.shiftKey); event.preventDefault();
+    }
+
+    function movePlotDrag(event) {
+      if(!plotDrag){inspectPlot(event);return;} if(event.pointerId!==plotDrag.pointerId)return; const rect=canvas.getBoundingClientRect(); const x=event.clientX-rect.left; const y=event.clientY-rect.top; plotDrag.lastX=x; plotDrag.lastY=y;
+      if(plotDrag.panning){const state=plotDrag.state;const dx=-(x-plotDrag.startX)/state.plotWidth*(state.view.xMax-state.view.xMin);const dy=(y-plotDrag.startY)/state.plotHeight*(state.view.yMax-state.view.yMin);const xr=clampedRange(state.view.xMin+dx,state.view.xMax+dx,state.full.xMin,state.full.xMax);const yr=clampedRange(state.view.yMin+dy,state.view.yMax+dy,state.full.yMin,state.full.yMax);viewport={xMin:xr[0],xMax:xr[1],yMin:yr[0],yMax:yr[1]};drawGraph(overlay);}else{zoomSelection.hidden=false;zoomSelection.style.left=`${Math.min(plotDrag.startX,x)}px`;zoomSelection.style.top=`${Math.min(plotDrag.startY,y)}px`;zoomSelection.style.width=`${Math.abs(x-plotDrag.startX)}px`;zoomSelection.style.height=`${Math.abs(y-plotDrag.startY)}px`;}
+    }
+
+    function finishPlotDrag(event) {
+      if(!plotDrag||event.pointerId!==plotDrag.pointerId)return; const drag=plotDrag; plotDrag=null; plotShell.classList.remove("panning"); zoomSelection.hidden=true;
+      if(!drag.panning&&Math.abs(drag.lastX-drag.startX)>8&&Math.abs(drag.lastY-drag.startY)>8){const state=drag.state;const left=Math.max(state.padding.left,Math.min(drag.startX,drag.lastX));const right=Math.min(state.padding.left+state.plotWidth,Math.max(drag.startX,drag.lastX));const top=Math.max(state.padding.top,Math.min(drag.startY,drag.lastY));const bottom=Math.min(state.padding.top+state.plotHeight,Math.max(drag.startY,drag.lastY));const xMin=state.view.xMin+((left-state.padding.left)/state.plotWidth)*(state.view.xMax-state.view.xMin);const xMax=state.view.xMin+((right-state.padding.left)/state.plotWidth)*(state.view.xMax-state.view.xMin);const yMax=state.view.yMax-((top-state.padding.top)/state.plotHeight)*(state.view.yMax-state.view.yMin);const yMin=state.view.yMax-((bottom-state.padding.top)/state.plotHeight)*(state.view.yMax-state.view.yMin);viewport={xMin,xMax,yMin,yMax};const factor=(state.full.xMax-state.full.xMin)/(xMax-xMin);syncZoomControls(factor);drawGraph(overlay);}
+    }
+
+    async function loadOverlay() {
+      const fileIds = selectedIds();
+      if (fileIds.length < 2) return;
+      const peakSelections = selectedPeakSelections();
+      if (seriesSelect.value === "selected_deconvolution_peaks" && !peakSelections.length) {
+        hidePeakDetails(); status.textContent="Select at least one deconvoluted peak component."; status.className="warning"; return;
+      }
+      const serial = ++requestSerial;
+      status.textContent = `Plotting ${fileIds.length} selected spectra together…`; status.className = "";
+      try {
+        const response = await fetch("/files/compare/overlay", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ file_ids: fileIds, normalization: normalizationSelect.value, series_name: seriesSelect.value, offset: Number(offsetInput.value), peak_selections:peakSelections }) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail?.message || "The comparison graph could not be built.");
+        if (serial !== requestSerial) return;
+        overlay = result; emptyState.hidden = true; plotShell.hidden = false; drawGraph(result); renderPeakDetails(result); loadGroupAnalyses(fileIds);
+        const offsetText=result.offset?` with ${result.offset.toLocaleString()} intensity units between traces`:"";
+        status.textContent = `${result.series.length} spectra shown together as ${seriesSelect.options[seriesSelect.selectedIndex].text}${offsetText} over ${result.wavenumber_range_cm_1[0].toFixed(1)}–${result.wavenumber_range_cm_1[1].toFixed(1)} cm⁻¹.`; status.className = "success";
+      } catch (error) {
+        if (serial !== requestSerial) return;
+        overlay = null; plotShell.hidden = true; emptyState.hidden = false; legend.replaceChildren(); hidePeakDetails(); status.textContent = error.message; status.className = "error";
+      }
+    }
+
+    async function loadRelated() {
+      const fileId = anchorSelect.value;
+      if (!fileId) return;
+      status.textContent = "Finding related spectra…"; status.className = ""; candidateList.replaceChildren();
+      try {
+        const response = await fetch(`/files/${encodeURIComponent(fileId)}/correlated`);
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail?.message || "Related spectra could not be loaded.");
+        const recommended = new Set(result.automatically_selected_file_ids);
+        discovery = { ...result, candidates: result.candidates.map((candidate) => ({ ...candidate, selected: recommended.has(candidate.file_id) })) };
+        renderCandidates();
+        const family = result.sample_family ? `Sample family ${result.sample_family.toUpperCase()} recognized. ` : "";
+        status.textContent = `${family}${recommended.size} spectra selected automatically.`; status.className = "success";
+        if (recommended.size >= 2) await loadOverlay();
+      } catch (error) { discovery = null; status.textContent = error.message; status.className = "error"; }
+    }
+
+    function syncAnchorOptions(preferredId = anchorSelect.value) {
+      anchorSelect.replaceChildren();
+      imports.forEach((file) => { const option=document.createElement("option"); option.value=file.file_id; option.textContent=`${file.sample_id || file.original_filename} · ${file.original_filename}`; anchorSelect.append(option); });
+      if (preferredId && imports.some((file) => file.file_id === preferredId)) anchorSelect.value = preferredId;
+    }
+
+    async function initialize() {
+      try {
+        const response = await fetch("/files"); imports = await response.json();
+        if (!response.ok) throw new Error("Datasets could not be loaded.");
+        if (!imports.length) { const option=document.createElement("option"); option.textContent="No imported spectra"; option.value=""; anchorSelect.append(option); anchorSelect.disabled=true; status.textContent="Import spectra before opening a comparison."; return; }
+        const requested = new URLSearchParams(window.location.search).get("file_id");
+        syncAnchorOptions(requested || imports[0].file_id);
+        await loadRelated();
+      } catch (error) { status.textContent=error.message; status.className="error"; }
+    }
+
+    anchorSelect.addEventListener("change", loadRelated);
+    filterInput.addEventListener("input", () => { if (discovery) renderCandidates(); });
+    const reloadPlotControls = () => { if (selectedIds().length >= 2) loadOverlay(); };
+    seriesSelect.addEventListener("change", () => {
+      const selectingPeaks=seriesSelect.value === "selected_deconvolution_peaks";
+      hidePeakDetails();
+      peakPicker.hidden=!selectingPeaks;
+      if(selectedIds().length>=2){if(selectingPeaks)loadPeakCatalog();else loadOverlay();}
+    });
+    normalizationSelect.addEventListener("change", reloadPlotControls);
+    offsetInput.addEventListener("change", reloadPlotControls);
+    offsetInput.addEventListener("input", () => { window.clearTimeout(updateTimer); updateTimer=window.setTimeout(reloadPlotControls,250); });
+    zoomRange.addEventListener("input", () => setZoom(zoomRange.value));
+    zoomNumber.addEventListener("change", () => setZoom(zoomNumber.value));
+    resetViewButton.addEventListener("click", resetView);
+    refreshPeaksButton.addEventListener("click",loadPeakCatalog);
+    reprocessPeaksButton.addEventListener("click",reprocessSelectedForPeaks);
+    customAnalysisOperation.addEventListener("change",syncCustomAnalysisForm);
+    customAnalysisForm.addEventListener("submit",addCustomAnalysis);
+    canvas.addEventListener("wheel",wheelZoom,{passive:false});
+    canvas.addEventListener("pointerdown",beginPlotDrag);
+    canvas.addEventListener("pointermove",movePlotDrag);
+    canvas.addEventListener("pointerup",finishPlotDrag);
+    canvas.addEventListener("pointercancel",finishPlotDrag);
+    canvas.addEventListener("pointerleave",()=>{if(!plotDrag)plotInspector.hidden=true;});
+    recommendedButton.addEventListener("click", () => { if (!discovery) return; const recommended=new Set(discovery.automatically_selected_file_ids); discovery.candidates.forEach((candidate) => { candidate.selected=recommended.has(candidate.file_id); }); renderCandidates(); scheduleGraph(); });
+    allButton.addEventListener("click", () => { if (!discovery) return; discovery.candidates.forEach((candidate,index) => { candidate.selected=index < 50; }); renderCandidates(); scheduleGraph(); });
+    clearButton.addEventListener("click", () => { if (!discovery) return; discovery.candidates.forEach((candidate) => { candidate.selected=false; }); renderCandidates(); updateSelectionSummary(); });
+    window.addEventListener("resize", () => { if (overlay && !plotShell.hidden) drawGraph(overlay); if(selectedAnalysis())drawSelectedAnalysis(); });
+    syncCustomAnalysisForm();
+    resetAnalysisWorkspace("Select at least two spectra to load analysis suggestions.");
+    initialize();
+  </script>
+</body>
+</html>
