@@ -317,6 +317,11 @@
       font-size: .78rem;
     }
 
+    .fit-legend-toggle input {
+      width: auto;
+      margin: 0;
+    }
+
     .fit-line-swatch {
       width: 24px;
       border-top: 2px solid var(--swatch);
@@ -372,6 +377,22 @@
       margin: 0;
       padding: .45rem .75rem;
       font-size: .75rem;
+    }
+
+    .fit-component-visibility {
+      display: inline-flex !important;
+      grid-column: 2 / -1;
+      grid-row: 3;
+      align-items: center;
+      gap: .35rem;
+      color: #526170;
+      font-size: .72rem !important;
+      font-weight: 700;
+    }
+
+    .fit-component-visibility input {
+      width: auto;
+      padding: 0;
     }
 
     .fit-component-center {
@@ -2390,7 +2411,6 @@
               <select id="wdf-dataset-select" aria-label="Spectrum stored in WDF"></select>
             </label>
             <button id="process-button" type="button">Process Raman spectrum</button>
-            <button id="analysis-history-button" class="secondary-button" type="button">Analysis history</button>
             <label>Analysis recipe
               <select id="analysis-recipe-select" aria-label="Analysis recipe">
                 <option value="review">Conservative review</option>
@@ -2401,7 +2421,6 @@
                 <option value="custom">Custom</option>
               </select>
             </label>
-            <button id="save-recipe-button" class="secondary-button" type="button">Save recipe</button>
             <label>Baseline
               <select id="baseline-method-select" aria-label="Baseline estimation method">
                 <option value="morphological_opening">Morphological opening (recommended)</option>
@@ -2425,6 +2444,19 @@
                 <option value="glass">Glass / SiO2</option>
               </select>
             </label>
+            <label>Normalization
+              <select id="normalization-mode-select" aria-label="Spectrum normalization mode">
+                <option value="none">None</option>
+                <option value="maximum">Maximum intensity</option>
+                <option value="area">Integrated absolute area</option>
+                <option value="peak">Selected material or substrate peak</option>
+              </select>
+            </label>
+            <label id="normalization-peak-label" hidden>Reference peak
+              <select id="normalization-peak-select" aria-label="Normalization reference peak">
+                <option value="">Select a peak</option>
+              </select>
+            </label>
             <label id="series-label" hidden>Displayed series
               <select id="series-select" aria-label="Displayed spectrum" hidden>
                 <option value="raw">Raw</option>
@@ -2440,7 +2472,6 @@
                 <option id="normalized-series-option" value="normalized" hidden>Normalized to selected peak</option>
               </select>
             </label>
-            <label class="inline-check"><input id="fit-inset-toggle" type="checkbox" checked> Show fit inset</label>
             <label class="dynamic-zoom-control">Dynamic zoom
               <span class="zoom-control">
                 <input id="zoom-range" type="range" min="1" max="50" step="0.1" value="1"
@@ -2451,6 +2482,9 @@
             </label>
             <button id="reset-view-button" class="secondary-button" type="button">Reset view</button>
             <span id="zoom-status">1×</span>
+            <button id="analysis-history-button" class="secondary-button" type="button">Analysis history</button>
+            <button id="save-recipe-button" class="secondary-button" type="button">Save recipe</button>
+            <label class="inline-check"><input id="fit-inset-toggle" type="checkbox" checked> Show fit inset</label>
           </div>
           <details id="advanced-processing-settings" class="advanced-processing-settings">
             <summary>Advanced processing settings</summary>
@@ -2494,19 +2528,6 @@
               <label>Peak detection threshold (% of maximum)
                 <input id="peak-detection-threshold" type="number" min="0.1" max="20" step="0.1" value="2">
               </label>
-              <label>Normalize to reference peak
-                <select id="normalization-mode-select">
-                  <option value="none">No normalization</option>
-                  <option value="maximum">Maximum intensity</option>
-                  <option value="area">Integrated absolute area</option>
-                  <option value="peak">Selected material or substrate peak</option>
-                </select>
-              </label>
-              <label id="normalization-peak-label" hidden>Reference peak
-                <select id="normalization-peak-select">
-                  <option value="">Select a peak</option>
-                </select>
-              </label>
             </div>
           </details>
           <details id="planned-protocol" class="planned-protocol">
@@ -2516,21 +2537,6 @@
         </div>
         <p class="plot-help"><small>Use the mouse wheel to zoom around the cursor. Drag an area to zoom at any zoom
             level. Once zoomed, use Shift + drag to pan in any direction.</small></p>
-        <section id="analysis-assurance" class="analysis-assurance" aria-label="Analysis quality and protocol" hidden>
-          <div id="quality-card" class="quality-card">
-            <div class="quality-heading">
-              <span id="quality-badge" class="quality-badge">Not run</span>
-              <strong>Spectrum quality gate</strong>
-            </div>
-            <p id="quality-message"></p>
-            <div id="quality-metrics" class="quality-metrics"></div>
-          </div>
-          <details class="protocol-card">
-            <summary id="protocol-title">Executed analysis protocol</summary>
-            <p id="protocol-intro" class="protocol-intro"></p>
-            <ol id="protocol-list" class="protocol-list"></ol>
-          </details>
-        </section>
         <details id="processing-details">
           <summary id="processing-details-summary">Analysis details · not processed</summary>
           <div id="processing-summary" role="status" aria-live="polite"></div>
@@ -2563,6 +2569,21 @@
             <span id="plot-tooltip"></span>
           </div>
         </div>
+        <section id="analysis-assurance" class="analysis-assurance" aria-label="Analysis quality and protocol" hidden>
+          <div id="quality-card" class="quality-card">
+            <div class="quality-heading">
+              <span id="quality-badge" class="quality-badge">Not run</span>
+              <strong>Spectrum quality gate</strong>
+            </div>
+            <p id="quality-message"></p>
+            <div id="quality-metrics" class="quality-metrics"></div>
+          </div>
+          <details class="protocol-card">
+            <summary id="protocol-title">Executed analysis protocol</summary>
+            <p id="protocol-intro" class="protocol-intro"></p>
+            <ol id="protocol-list" class="protocol-list"></ol>
+          </details>
+        </section>
       </section>
     </div>
 
@@ -2843,6 +2864,8 @@
     let plotViewport = null;
     let plotDrag = null;
     let fitInsetDrag = null;
+    const hiddenFitComponents = new Set();
+    const hiddenFitLines = new Set();
     let pendingFitAssignment = null;
     let activeClarification = null;
     let editingImport = null;
@@ -2856,6 +2879,7 @@
     let reviewQueueActive = false;
     const openImportGroups = new Map();
     const IMPORT_GROUP_ORDER_KEY = "materialsCopilotImportGroupOrder";
+    const LAST_WORKING_FILE_KEY = "materialsCopilotLastWorkingFile";
     let instrumentPresets = [];
     let toastTimer = null;
     const INTERACTIVE_GUIDANCE_KEY = "materialsCopilotInteractiveGuidance";
@@ -3236,6 +3260,28 @@
       fitInsetLegend.append(row);
     }
 
+    function appendFitLineToggle(label, color, key) {
+      const row = document.createElement("label");
+      row.className = "fit-legend-line fit-legend-toggle";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = !hiddenFitLines.has(key);
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) hiddenFitLines.delete(key);
+        else hiddenFitLines.add(key);
+        if (activePreview) drawPlot(activePreview);
+      });
+      const swatch = document.createElement("span");
+      swatch.className = "fit-line-swatch";
+      swatch.style.setProperty("--swatch", color);
+      row.append(checkbox, swatch, document.createTextNode(`Show ${label}`));
+      fitInsetLegend.append(row);
+    }
+
+    function fitComponentVisibilityKey(component, componentKind) {
+      return `${componentKind}:${component["seed_center_cm-1"]}`;
+    }
+
     function peakLabelAppearance(peak) {
       const assignment = (peak.assignments || [])[0];
       const material = (assignment?.material_system || "").trim();
@@ -3318,8 +3364,8 @@
       fitInsetStatus.className = "";
       fitInsetLegend.replaceChildren();
       fitComponentEditors.replaceChildren();
-      appendFitLegend(comparisonLabel, comparisonColor);
-      appendFitLegend(totalLabel, totalColor);
+      appendFitLineToggle(comparisonLabel, comparisonColor, "comparison");
+      appendFitLineToggle(totalLabel, totalColor, "total");
       components.forEach(({ component, index }) => {
         const editor = document.createElement("div");
         editor.className = "fit-component-editor";
@@ -3350,6 +3396,18 @@
         assignmentLabel.append(assignmentInput);
         const actions = document.createElement("div");
         actions.className = "fit-component-actions";
+        const visibilityLabel = document.createElement("label");
+        visibilityLabel.className = "fit-component-visibility";
+        const visibilityInput = document.createElement("input");
+        const visibilityKey = `${componentKind}:${component["seed_center_cm-1"]}`;
+        visibilityInput.type = "checkbox";
+        visibilityInput.checked = !hiddenFitComponents.has(visibilityKey);
+        visibilityInput.addEventListener("change", () => {
+          if (visibilityInput.checked) hiddenFitComponents.delete(visibilityKey);
+          else hiddenFitComponents.add(visibilityKey);
+          if (activePreview) drawPlot(activePreview);
+        });
+        visibilityLabel.append(visibilityInput, document.createTextNode("Show line"));
         const editButton = document.createElement("button");
         editButton.type = "button";
         editButton.className = "secondary-button";
@@ -3375,7 +3433,7 @@
           assignmentInput,
         ));
         actions.append(editButton, reviewButton);
-        editor.append(swatch, center, materialLabel, assignmentLabel, actions);
+        editor.append(swatch, center, materialLabel, assignmentLabel, visibilityLabel, actions);
         fitComponentEditors.append(editor);
       });
     }
@@ -3806,6 +3864,17 @@
           yLabel = "Estimated baseline intensity";
         } else if (selectedSeries === "normalized") {
           yLabel = activeProcessing.axes.normalized_y_label || "Normalized intensity";
+          const normalizationIntensity = activeProcessing.summary?.normalization?.intensity;
+          const sourceComponents = activeProcessing.deconvolution?.components?.length
+            ? activeProcessing.deconvolution.components
+            : activeProcessing.substrate_correction?.components || [];
+          if (normalizationIntensity) {
+            componentSeries = sourceComponents.map((component) => ({
+              ...component,
+              series: component.series.map(([x, y]) => [x, y / normalizationIntensity]),
+            }));
+            componentInsetTitle = "Normalized fitted components";
+          }
         } else {
           yLabel = activeProcessing.axes.raw_y_label;
         }
@@ -3827,9 +3896,19 @@
       const fullXMax = Math.max(...allXValues);
       const fullXRange = fullXMax - fullXMin;
       const allYValues = allPoints.map((point) => point[1]);
-      if (comparisonPoints) {
+      if (comparisonPoints && !hiddenFitLines.has("comparison")) {
         comparisonPoints.forEach((point) => allYValues.push(point[1]));
       }
+      const fitComponentKind = selectedSeries === "substrate_corrected"
+        ? "substrate"
+        : "deconvolution";
+      componentSeries
+        .filter((component) => !hiddenFitComponents.has(
+          fitComponentVisibilityKey(component, fitComponentKind),
+        ))
+        .forEach((component) => {
+          component.series.forEach((point) => allYValues.push(point[1]));
+        });
       let fullYMin = Math.min(...allYValues);
       let fullYMax = Math.max(...allYValues);
       if (fullYMin === fullYMax) { fullYMin -= 1; fullYMax += 1; }
@@ -3868,10 +3947,16 @@
       } else {
         [yMin, yMax] = clampViewRange(yMin, yMax, fullYMin, fullYMax);
       }
-      const visiblePeaks = (activeProcessing?.peaks || []).filter(
+      let visiblePeaks = (activeProcessing?.peaks || []).filter(
         (peak) => peak["position_cm-1"] >= xMin
           && peak["position_cm-1"] <= xMax,
       );
+      if (selectedSeries === "normalized" && activeProcessing?.summary?.normalization?.intensity) {
+        visiblePeaks = visiblePeaks.map((peak) => {
+          const nearest = nearestPoint(points, peak["position_cm-1"]);
+          return { ...peak, intensity: nearest[1] };
+        });
+      }
       const visibleCollectiveBands = (activeProcessing?.collective_bands || [])
         .filter((band) => band["range_cm-1"][1] >= xMin
           && band["range_cm-1"][0] <= xMax);
@@ -3955,19 +4040,22 @@
         context.stroke();
       }
 
-      context.strokeStyle = mainLineColor;
-      context.lineWidth = 1.5;
-      context.beginPath();
-      points.forEach((point, index) => {
-        const x = xPosition(point[0]);
-        const y = yPosition(point[1]);
-        if (index === 0) context.moveTo(x, y);
-        else context.lineTo(x, y);
-      });
-      context.stroke();
+      if (!hiddenFitLines.has("total")) {
+        context.strokeStyle = mainLineColor;
+        context.lineWidth = 1.5;
+        context.beginPath();
+        points.forEach((point, index) => {
+          const x = xPosition(point[0]);
+          const y = yPosition(point[1]);
+          if (index === 0) context.moveTo(x, y);
+          else context.lineTo(x, y);
+        });
+        context.stroke();
+      }
 
       if (componentSeries.length) {
         componentSeries.forEach((component, componentIndex) => {
+          if (hiddenFitComponents.has(fitComponentVisibilityKey(component, fitComponentKind))) return;
           const visibleComponent = component.series.filter(
             (point) => point[0] >= xMin && point[0] <= xMax,
           );
@@ -3986,7 +4074,7 @@
         context.setLineDash([]);
       }
 
-      if (activeProcessing && ["corrected", "deconvolved_fit"].includes(selectedSeries)) {
+      if (activeProcessing && ["corrected", "deconvolved_fit", "normalized"].includes(selectedSeries)) {
         const placedPeakLabelBoxes = [];
         visiblePeaks.forEach((peak) => {
           const appearance = peakLabelAppearance(peak);
@@ -4061,9 +4149,7 @@
           && component["center_cm-1"] <= xMax);
       renderFitInset({
         components: visibleEditableComponents,
-        componentKind: selectedSeries === "substrate_corrected"
-          ? "substrate"
-          : "deconvolution",
+        componentKind: fitComponentKind,
         title: componentInsetTitle || "Fit components",
         comparisonLabel: comparisonLegendLabel,
         comparisonColor: "#9aa6b2",
@@ -4075,11 +4161,18 @@
       if (componentSeries.length && fitInsetToggle.checked && fitInsetPanel.hidden) {
         const visibleLegendComponents = componentSeries
           .map((component, index) => ({ component, index }))
+          .filter(({ component }) => !hiddenFitComponents.has(
+            fitComponentVisibilityKey(component, fitComponentKind),
+          ))
           .filter(({ component }) => component["center_cm-1"] >= xMin
             && component["center_cm-1"] <= xMax);
         const legendEntries = [
-          { color: "#9aa6b2", dashed: false, label: comparisonLegendLabel },
-          { color: mainLineColor, dashed: false, label: mainLegendLabel },
+          ...(!hiddenFitLines.has("comparison")
+            ? [{ color: "#9aa6b2", dashed: false, label: comparisonLegendLabel }]
+            : []),
+          ...(!hiddenFitLines.has("total")
+            ? [{ color: mainLineColor, dashed: false, label: mainLegendLabel }]
+            : []),
           ...visibleLegendComponents.map(({ component, index }) => {
             const assignment = component.assignment;
             const assignmentLabel = assignment
@@ -4766,6 +4859,14 @@
     function applyProcessing(result) {
       activeProcessing = result;
       updateNormalizationOptions(result);
+      const processingParameters = result.model?.parameters || {};
+      if (["none", "maximum", "area", "peak"].includes(processingParameters.normalization_mode)) {
+        normalizationModeSelect.value = processingParameters.normalization_mode;
+        normalizationPeakLabel.hidden = normalizationModeSelect.value !== "peak";
+        if (processingParameters["normalization_peak_cm-1"] != null) {
+          normalizationPeakSelect.value = String(processingParameters["normalization_peak_cm-1"]);
+        }
+      }
       if (activePreview) {
         const importedFile = allImports.find((file) => file.file_id === activePreview.file_id);
         if (importedFile) {
@@ -4811,12 +4912,12 @@
         : storedSubstrateMode;
       renderPlannedProtocol();
       syncRecipeSelection();
-      seriesSelect.value = fittedForPlot
-        ? "deconvolved_fit"
-        : substrateSubtracted
-          ? "substrate_corrected"
-          : result.series?.normalized
-            ? "normalized"
+      seriesSelect.value = result.series?.normalized
+        ? "normalized"
+        : fittedForPlot
+          ? "deconvolved_fit"
+          : substrateSubtracted
+            ? "substrate_corrected"
             : "corrected";
       processButton.hidden = false;
       processButton.disabled = false;
@@ -5334,6 +5435,15 @@
           throw new Error(preview.detail?.message || "A plot is not available.");
         }
         activePreview = preview;
+        hiddenFitComponents.clear();
+        hiddenFitLines.clear();
+        localStorage.setItem(
+          LAST_WORKING_FILE_KEY,
+          JSON.stringify({
+            fileId: preview.file_id,
+            datasetIndex: preview.dataset_index || 0,
+          }),
+        );
         const availableDatasets = preview.available_datasets || [];
         wdfDatasetSelect.replaceChildren();
         availableDatasets.forEach((dataset) => {
@@ -5794,7 +5904,19 @@
         refreshTechniqueFilter();
         renderImports();
         if (!files.length) return;
-        if (!activePreview) await loadPreview(files[0].file_id);
+        if (!activePreview) {
+          let lastWorkingFile = null;
+          try {
+            lastWorkingFile = JSON.parse(localStorage.getItem(LAST_WORKING_FILE_KEY) || "null");
+          } catch (_error) {
+            lastWorkingFile = null;
+          }
+          const lastFile = files.find((file) => file.file_id === lastWorkingFile?.fileId);
+          await loadPreview(
+            lastFile?.file_id || files[0].file_id,
+            lastFile ? Number(lastWorkingFile.datasetIndex) || 0 : 0,
+          );
+        }
       } catch (_error) {
         fileList.innerHTML = "<tr><td colspan='6'>Could not load imports.</td></tr>";
       }
