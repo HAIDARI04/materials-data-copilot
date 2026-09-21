@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A local-first workspace for traceable materials-science experimental data.">
+  <title>Materials Data Copilot</title>
+  <link rel="stylesheet" href="/assets/workspace.css?v=20260916-raman-layout3">
+</head>
+<body>
+  <a class="skip-link" href="#workspace-view">Skip to workspace</a>
+  <div class="app-frame">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="/app" aria-label="Materials Data Copilot home">
+        <span class="brand-mark" aria-hidden="true">M</span>
+        <span><strong>Materials</strong><small>Data Copilot</small></span>
+      </a>
+
+      <nav class="side-nav" aria-label="Primary navigation">
+        <a data-route="home" href="/app"><span class="nav-icon">O</span><span>Overview</span></a>
+        <a data-route="projects" href="/app/projects"><span class="nav-icon">P</span><span>Projects</span></a>
+        <a data-route="samples" href="/app/samples"><span class="nav-icon">S</span><span>Samples</span></a>
+        <a data-route="datasets" href="/app/datasets"><span class="nav-icon">D</span><span>Datasets</span></a>
+        <a data-route="research" href="/app/research"><span class="nav-icon">L</span><span>Research library</span></a>
+
+        <span class="nav-label">Analyze</span>
+        <a data-route="raman" href="/app/analyze/raman"><span class="tech-dot raman"></span><span>Raman</span></a>
+        <a data-route="transport" href="/app/analyze/transport"><span class="tech-dot transport"></span><span>Transport</span></a>
+        <a data-route="afm" href="/app/analyze/afm"><span class="tech-dot afm"></span><span>AFM</span></a>
+        <a data-route="pl" href="/app/analyze/pl"><span class="nav-icon">PL</span><span>Photoluminescence</span></a>
+        <a data-route="xrd" href="/app/analyze/xrd"><span class="nav-icon">X</span><span>XRD</span></a>
+        <a data-route="sem" href="/app/analyze/sem"><span class="nav-icon">S</span><span>SEM</span></a>
+        <a data-route="cvd" href="/app/analyze/cvd"><span class="nav-icon">G</span><span>Growth</span></a>
+        <a data-route="xps" href="/app/analyze/xps"><span class="tech-dot xps"></span><span>XPS</span></a>
+
+        <span class="nav-label">Workspace</span>
+        <a data-route="compare" href="/comparison"><span class="nav-icon">C</span><span>Compare</span></a>
+        <a data-route="references" href="/app/references"><span class="nav-icon">R</span><span>References</span></a>
+        <a data-route="reports" href="/app/reports"><span class="nav-icon">E</span><span>Reports &amp; exports</span></a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="server-indicator" id="server-indicator"><i></i><span>Checking local data</span></span>
+        <small>Raw measurements stay immutable.</small>
+      </div>
+    </aside>
+
+    <div class="page-shell">
+      <header class="topbar">
+        <button class="menu-button" id="menu-button" type="button" aria-label="Open navigation" aria-expanded="false">Menu</button>
+        <div class="breadcrumb" id="breadcrumb">Workspace / Overview</div>
+        <form class="global-search" id="global-search" role="search">
+          <label class="sr-only" for="global-search-input">Search datasets</label>
+          <input id="global-search-input" type="search" autocomplete="off" placeholder="Search files, samples, materials">
+          <span class="shortcut" aria-hidden="true">/</span>
+        </form>
+        <a class="button primary compact" href="/upload#import-panel">Import data</a>
+      </header>
+
+      <main class="workspace-view" id="workspace-view" tabindex="-1">
+        <div class="loading-state" role="status">
+          <span class="loading-mark"></span>
+          <p>Opening your research workspace...</p>
+        </div>
+      </main>
+    </div>
+  </div>
+  <div class="sidebar-scrim" id="sidebar-scrim" hidden></div>
+  <script src="/assets/plot_preferences.js?v=20260915-guided-recipe" defer></script>
+  <script src="/assets/transport_exports.js?v=20260915-complete-export" defer></script>
+  <script src="/assets/transport_plot.js?v=20260915-complete-export" defer></script>
+  <script src="/assets/photodetector.js?v=20260915-complete-export" defer></script>
+  <script src="/assets/research.js?v=20260916-raman-processing4" defer></script>
+  <script src="/assets/workspace.js?v=20260915-imported-groups" defer></script>
+</body>
+</html>

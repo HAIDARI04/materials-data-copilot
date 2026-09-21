@@ -1,0 +1,33 @@
+body.raman-workspace { padding: 0; background: transparent; color: #233d36; }
+.raman-workspace main { width: 100%; max-width: none; }
+.raman-workspace .hero,
+.raman-workspace .app-header,
+.raman-workspace #import-panel,
+.raman-workspace #reference-panel,
+.raman-workspace #photo-upload-suggestions { display: none !important; }
+.raman-workspace .analysis-workspace,
+.raman-workspace .analysis-workspace:has(#plot-panel[hidden]) {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem; margin: 0; align-items: start;
+}
+.raman-workspace #recent-panel { position: static; max-height: none; overflow: visible; width: 100%; }
+.raman-workspace .panel { border: 1px solid #dce5df; border-radius: 14px; box-shadow: none; }
+.raman-workspace .raman-analysis-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: .85rem; margin: 1rem 0; padding: 1rem; border: 1px solid #dce5df; border-radius: 12px; }
+.raman-workspace .raman-analysis-choices > h3,
+.raman-workspace .raman-analysis-choices > details { grid-column: 1 / -1; }
+.raman-workspace .raman-analysis-choices > h3 { margin: 0; }
+.raman-workspace .raman-analysis-choices label { display: grid; gap: .4rem; }
+.raman-workspace .raman-analysis-choices select,
+.raman-workspace .raman-analysis-choices input { width: 100%; min-width: 0; }
+.raman-workspace .advanced-processing-grid { grid-template-columns: minmax(0, 1fr); }
+.raman-workspace .raman-empty { display: none; }
+.raman-workspace #plot-panel[hidden] + .raman-empty { display: block; }
+.raman-workspace .processing-controls { flex-wrap: wrap; }
+.raman-workspace .plot-actions { flex-wrap: wrap; }
+.raman-workspace.raman-wide .analysis-workspace,
+.raman-workspace.raman-wide .analysis-workspace:has(#plot-panel[hidden]) {
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 1.5fr);
+}
+.raman-workspace.raman-wide #recent-panel { grid-column: 1; grid-row: 1; min-width: 0; }
+.raman-workspace.raman-wide #plot-panel,
+.raman-workspace.raman-wide .raman-empty { grid-column: 2; grid-row: 1; min-width: 0; }
