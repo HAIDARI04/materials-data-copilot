@@ -11,7 +11,8 @@ PROJECT_ROOT = BACKEND_DIR.parent
 DEFAULT_LOCAL_DATA_DIR = BACKEND_DIR / "data"
 
 # Keep machine-specific paths out of Git while allowing the same checkout to be
-# configured independently on every computer.
+# configured independently on every computer. Shared payloads and the active
+# SQLite catalog intentionally have separate roots.
 load_dotenv(PROJECT_ROOT / ".env", override=False)
 
 

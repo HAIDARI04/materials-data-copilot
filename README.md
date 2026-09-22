@@ -46,6 +46,17 @@ must not be opened from a synchronized folder.
 4. Leave `MDC_LOCAL_DATA_DIR=backend/data` so the active database remains local.
 5. Close MDC and wait for Google Drive to finish syncing before switching PCs.
 
+For an existing MDC installation, stop the API and migrate its managed files
+before enabling the new `.env` path:
+
+```powershell
+backend\.venv\Scripts\python.exe backend\migrate_storage.py "G:\My Drive\MDC-Data"
+```
+
+The migration writes to a new destination, verifies every cataloged file by
+size and SHA-256, retains the original folders, creates a local pre-migration
+database backup, and atomically updates catalog paths only after verification.
+
 With this configuration, `raw`, `processed`, and `references` are stored under
 the shared folder. The catalog remains at
 `backend/data/materials_data_copilot.db`. Create a verified catalog backup in
